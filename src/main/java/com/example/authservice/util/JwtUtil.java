@@ -1,4 +1,4 @@
-package com.example.authservice.security;
+package com.example.authservice.util;
 
 import com.example.authservice.config.JwtConfig;
 import com.example.authservice.entity.Role;

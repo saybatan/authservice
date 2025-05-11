@@ -1,5 +1,6 @@
-package com.example.authservice.security;
+package com.example.authservice.filter;
 
+import com.example.authservice.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
