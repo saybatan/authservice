@@ -25,18 +25,12 @@ public class AuthenticationController {
 
     @PostMapping("/register")
     public String register(@RequestBody User user) {
-        // Şifreyi güvenli şekilde şifrele
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-
-        // Kullanıcıya default olarak "USER" rolü ata, eğer rol veritabanında yoksa önce kaydet
         Role defaultRole = roleRepository.findByName("USER")
                 .orElseGet(() -> roleRepository.save(new Role(null, "USER")));
 
         user.setRoles(Set.of(defaultRole));
-
-        // Kullanıcıyı veritabanına kaydet
         userRepository.save(user);
-
         return "User registered successfully!";
     }
 
@@ -44,11 +38,9 @@ public class AuthenticationController {
     public String login(@RequestBody User user) {
         User dbUser = userRepository.getByUsername(user.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-
         if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
             return "Invalid credentials";
         }
-
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(dbUser);
     }
 }
