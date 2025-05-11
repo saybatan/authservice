@@ -1,12 +1,18 @@
 package com.example.authservice.controller;
 
+import com.example.authservice.dto.LoginRequestDto;
+import com.example.authservice.dto.RegisterRequestDto;
 import com.example.authservice.entity.Role;
 import com.example.authservice.entity.User;
 import com.example.authservice.repository.RoleRepository;
 import com.example.authservice.repository.UserRepository;
+import com.example.authservice.response.RestResponse;
 import com.example.authservice.util.JwtUtil;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,23 +30,32 @@ public class AuthenticationController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public String register(@RequestBody User user) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+    public ResponseEntity<RestResponse<String>> register(@Valid @RequestBody RegisterRequestDto requestDto) {
+        User user = new User();
+        user.setUsername(requestDto.getUsername());
+        user.setEmail(requestDto.getEmail());
+        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+
         Role defaultRole = roleRepository.findByName("USER")
                 .orElseGet(() -> roleRepository.save(new Role(null, "USER")));
 
         user.setRoles(Set.of(defaultRole));
         userRepository.save(user);
-        return "User registered successfully!";
+
+        return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "User registered successfully!", null));
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User user) {
-        User dbUser = userRepository.getByUsername(user.getUsername())
+    public ResponseEntity<RestResponse<String>> login(@RequestBody LoginRequestDto loginDto) {
+        User dbUser = userRepository.getByUsername(loginDto.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        if (!passwordEncoder.matches(user.getPassword(), dbUser.getPassword())) {
-            return "Invalid credentials";
+
+        if (!passwordEncoder.matches(loginDto.getPassword(), dbUser.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new RestResponse<>(HttpStatus.UNAUTHORIZED, "Invalid credentials", null));
         }
-        return jwtUtil.generateToken(dbUser);
+
+        String token = jwtUtil.generateToken(dbUser);
+        return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "Login successful!", token));
     }
 }
