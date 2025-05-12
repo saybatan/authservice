@@ -6,6 +6,7 @@ import com.example.authservice.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Base64;
@@ -15,13 +16,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class JwtUtil {
 
     private final JwtConfig jwtConfig;
-
-    public JwtUtil(JwtConfig jwtConfig) {
-        this.jwtConfig = jwtConfig;
-    }
 
     public String generateToken(User user) {
         Set<Role> roles = user.getRoles();
