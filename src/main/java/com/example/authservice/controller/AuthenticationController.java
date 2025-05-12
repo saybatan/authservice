@@ -16,9 +16,14 @@ public class AuthenticationController {
 
     private final UserService userService;
 
-    @PostMapping("/register")
-    public ResponseEntity<RestResponse<String>> register(@RequestBody RegisterRequestDto requestDto) {
-        return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "User registered successfully!", userService.registerUser(requestDto)));
+    @PostMapping("/register/user")
+    public ResponseEntity<RestResponse<String>> registerUser(@RequestBody RegisterRequestDto requestDto) {
+        return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "User registration result:", userService.registerUser(requestDto)));
+    }
+
+    @PostMapping("/register/admin")
+    public ResponseEntity<RestResponse<String>> registerAdmin(@RequestBody RegisterRequestDto requestDto) {
+        return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "Admin registration result:", userService.registerAdmin(requestDto)));
     }
 
     @PostMapping("/login")

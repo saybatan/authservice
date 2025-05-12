@@ -11,10 +11,13 @@ import com.example.authservice.util.JwtUtil;
 import com.example.authservice.service.UserService;
 import com.example.authservice.util.UserMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,12 +37,35 @@ public class UserServiceImpl implements UserService {
         user.setEmail(requestDto.getEmail());
         user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
 
-        Role defaultRole = roleService.findOrCreateRole("USER");
+        String requestedRole = (requestDto.getRole() != null && !requestDto.getRole().isEmpty()) ? requestDto.getRole().toUpperCase(Locale.ROOT) : "USER";
 
-        user.setRoles(Set.of(defaultRole));
+        if ("ADMIN".equals(requestedRole)) {
+            throw new RuntimeException("You cannot register as ADMIN! Only an existing ADMIN can create another ADMIN.");
+        }
+
+        Role assignedRole = roleService.findOrCreateRole(requestedRole);
+        user.setRoles(Set.of(assignedRole));
+
         userRepository.save(user);
+        return "User registered successfully with role: " + requestedRole;
+    }
 
-        return "User registered successfully!";
+    @Override
+    public String registerAdmin(RegisterRequestDto requestDto) {
+        if (!isCurrentUserAdmin()) {
+            throw new RuntimeException("Only an ADMIN can create another ADMIN!");
+        }
+
+        User user = new User();
+        user.setUsername(requestDto.getUsername());
+        user.setEmail(requestDto.getEmail());
+        user.setPassword(passwordEncoder.encode(requestDto.getPassword()));
+
+        Role adminRole = roleService.findOrCreateRole("ADMIN");
+        user.setRoles(Set.of(adminRole));
+
+        userRepository.save(user);
+        return "Admin user registered successfully!";
     }
 
     @Override
@@ -59,5 +85,11 @@ public class UserServiceImpl implements UserService {
         return userRepository.findAll().stream()
                 .map(UserMapper::toUserResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    private boolean isCurrentUserAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null && authentication.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

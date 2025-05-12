@@ -24,7 +24,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/users/**").hasRole("USER")
-                        .requestMatchers("/docs/**", "/api-docs/**", "/swagger-ui/**").permitAll() // Swagger UI'ye erişimi açıyoruz
+                        .requestMatchers("/docs/**", "/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated()
                 );
         return http.build();
