@@ -5,6 +5,7 @@ import com.example.authservice.dto.LoginRequestDto;
 import com.example.authservice.dto.UserResponseDto;
 import com.example.authservice.entity.Role;
 import com.example.authservice.entity.User;
+import com.example.authservice.exception.UnauthorizedException;
 import com.example.authservice.repository.UserRepository;
 import com.example.authservice.service.RoleService;
 import com.example.authservice.util.JwtUtil;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
         String requestedRole = (requestDto.getRole() != null && !requestDto.getRole().isEmpty()) ? requestDto.getRole().toUpperCase(Locale.ROOT) : "USER";
 
         if ("ADMIN".equals(requestedRole)) {
-            throw new RuntimeException("You cannot register as ADMIN! Only an existing ADMIN can create another ADMIN.");
+            throw new UnauthorizedException("You cannot register as ADMIN! Only an existing ADMIN can create another ADMIN.");
         }
 
         Role assignedRole = roleService.findOrCreateRole(requestedRole);
@@ -53,7 +54,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String registerAdmin(RegisterRequestDto requestDto) {
         if (!isCurrentUserAdmin()) {
-            throw new RuntimeException("Only an ADMIN can create another ADMIN!");
+            throw new UnauthorizedException("Only an ADMIN can create another ADMIN!");
         }
 
         User user = new User();
