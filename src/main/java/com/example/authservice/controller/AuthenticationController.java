@@ -21,11 +21,6 @@ public class AuthenticationController {
         return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "User registration result:", userService.registerUser(requestDto)));
     }
 
-    @PostMapping("/register/admin")
-    public ResponseEntity<RestResponse<String>> registerAdmin(@RequestBody RegisterRequestDto requestDto) {
-        return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "Admin registration result:", userService.registerAdmin(requestDto)));
-    }
-
     @PostMapping("/login")
     public ResponseEntity<RestResponse<String>> login(@RequestBody LoginRequestDto loginDto) {
         return ResponseEntity.ok(new RestResponse<>(HttpStatus.OK, "Login successful!", userService.loginUser(loginDto)));
